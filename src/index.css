@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: 'Syne', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #09090b;
+  color: #FFFFFF;
+}
+
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+}
+
+.font-mono, tabular-nums {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Minimalist monochrome glass panels */
+.glass-panel {
+  background: rgba(18, 18, 20, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel-hover:hover {
+  background: rgba(28, 28, 32, 0.9);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Custom monochrome scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #09090b;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #52525b;
+}
+
+/* Subtle Success Checkmark Animations */
+@keyframes checkmark-circle {
+  0% {
+    stroke-dashoffset: 150;
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes checkmark-check {
+  0% {
+    stroke-dashoffset: 38;
+    opacity: 0;
+  }
+  35% {
+    stroke-dashoffset: 38;
+    opacity: 0;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes checkmark-pop {
+  0% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  65% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes checkmark-aura {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+
+.animate-checkmark-circle {
+  stroke-dasharray: 150;
+  stroke-dashoffset: 150;
+  animation: checkmark-circle 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-checkmark-check {
+  stroke-dasharray: 38;
+  stroke-dashoffset: 38;
+  animation: checkmark-check 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-checkmark-pop {
+  animation: checkmark-pop 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-checkmark-aura {
+  animation: checkmark-aura 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
