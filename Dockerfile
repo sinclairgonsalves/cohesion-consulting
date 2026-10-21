@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Install dependencies
 COPY package*.json ./
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Build client assets into /dist
 COPY . .
@@ -19,7 +19,7 @@ ENV NODE_ENV=production
 ENV PORT=8080
 
 COPY package*.json ./
-RUN npm install --omit=dev
+RUN npm install --omit=dev --legacy-peer-deps
 
 # Copy compiled static assets and server
 COPY --from=builder /app/dist ./dist
