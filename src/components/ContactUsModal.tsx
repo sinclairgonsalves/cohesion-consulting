@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, CheckCircle2, Send, User, Mail, Building, Phone, MessageSquare } from 'lucide-react';
 import { SuccessCheckmark } from './SuccessCheckmark.tsx';
+import { submitInquiry } from '../lib/inquiry.ts';
 
 interface ContactUsModalProps {
   isOpen: boolean;
@@ -18,6 +19,8 @@ export const ContactUsModal: React.FC<ContactUsModalProps> = ({ isOpen, onClose,
   const [message, setMessage] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [referenceId, setReferenceId] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const SERVICE_OPTIONS = [
     'Customer Support Representative (CSR)',
@@ -42,13 +45,30 @@ export const ContactUsModal: React.FC<ContactUsModalProps> = ({ isOpen, onClose,
     }
   }, [defaultService, isOpen]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName || !workEmail || !companyName) return;
+    if (!fullName || !workEmail || !companyName || isSubmitting) return;
 
-    const ref = `ETC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-    setReferenceId(ref);
-    setIsSubmitted(true);
+    setSubmitError('');
+    setIsSubmitting(true);
+    try {
+      const ref = await submitInquiry({
+        fullName,
+        workEmail,
+        companyName,
+        phoneNumber,
+        service: selectedService,
+        teamSize,
+        message,
+        source: 'website-contact-modal',
+      });
+      setReferenceId(ref);
+      setIsSubmitted(true);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Your inquiry could not be sent just now. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleClose = () => {
@@ -206,12 +226,18 @@ export const ContactUsModal: React.FC<ContactUsModalProps> = ({ isOpen, onClose,
               </div>
 
               <div className="pt-2">
+                {submitError && (
+                  <p role="alert" className="mb-3 rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2.5 text-xs text-red-200">
+                    {submitError}
+                  </p>
+                )}
                 <button
                   type="submit"
-                  className="w-full py-3 px-4 text-xs font-semibold text-black bg-white hover:bg-zinc-200 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  disabled={isSubmitting}
+                  className="w-full py-3 px-4 text-xs font-semibold text-black bg-white hover:bg-zinc-200 disabled:opacity-60 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Send className="w-3.5 h-3.5 text-black" />
-                  <span>Send Inquiry to Engagement Director</span>
+                  <span>{isSubmitting ? 'Sending inquiry…' : 'Send Inquiry to Engagement Director'}</span>
                 </button>
                 <span className="text-[10px] text-zinc-400 text-center block mt-1.5 font-mono">
                   &lt; 15 min response SLA · Confidential & NDA-protected
