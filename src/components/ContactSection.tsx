@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Send, CheckCircle2, ShieldCheck, Clock, Calendar, Mail, Building, User, Phone, MessageSquare } from 'lucide-react';
 import { SuccessCheckmark } from './SuccessCheckmark.tsx';
+import { submitInquiry } from '../lib/inquiry.ts';
 
 interface ContactSectionProps {
   initialService?: string;
@@ -16,6 +17,8 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ initialService }
   const [message, setMessage] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [referenceId, setReferenceId] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const SERVICE_OPTIONS = [
     'Customer Support Representative (CSR)',
@@ -33,17 +36,35 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ initialService }
     'Enterprise Custom Team (10+)',
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName || !workEmail || !companyName) return;
+    if (!fullName || !workEmail || !companyName || isSubmitting) return;
 
-    const ref = `ETC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-    setReferenceId(ref);
-    setIsSubmitted(true);
+    setSubmitError('');
+    setIsSubmitting(true);
+    try {
+      const ref = await submitInquiry({
+        fullName,
+        workEmail,
+        companyName,
+        phoneNumber,
+        service: selectedService,
+        teamSize,
+        message,
+        source: 'website-contact-form',
+      });
+      setReferenceId(ref);
+      setIsSubmitted(true);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Your inquiry could not be sent just now. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleReset = () => {
     setIsSubmitted(false);
+    setSubmitError('');
     setFullName('');
     setWorkEmail('');
     setCompanyName('');
@@ -230,12 +251,18 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ initialService }
 
                   {/* Submit Button (White on Black) */}
                   <div className="pt-2">
+                    {submitError && (
+                      <p role="alert" className="mb-3 rounded-xl border border-red-500/40 bg-red-500/10 px-3.5 py-2.5 text-xs text-red-200">
+                        {submitError}
+                      </p>
+                    )}
                     <button
                       type="submit"
-                      className="w-full py-3.5 px-4 text-xs sm:text-sm font-semibold text-black bg-white hover:bg-zinc-200 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                      disabled={isSubmitting}
+                      className="w-full py-3.5 px-4 text-xs sm:text-sm font-semibold text-black bg-white hover:bg-zinc-200 disabled:opacity-60 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Send className="w-4 h-4 text-black" />
-                      <span>Submit Inquiry to Engagement Director</span>
+                      <span>{isSubmitting ? 'Sending inquiry…' : 'Submit Inquiry to Engagement Director'}</span>
                     </button>
                     <p className="text-[11px] text-center text-zinc-400 mt-2 font-mono">
                       Guaranteed response within &lt; 15 minutes · No obligations or upfront fees
