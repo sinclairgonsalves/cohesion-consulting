@@ -1,6 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs/promises';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import { GoogleGenAI } from '@google/genai';
 
@@ -34,6 +36,153 @@ if (apiKey) {
     console.error('Failed to initialize GoogleGenAI:', err);
   }
 }
+
+// ---------------------------------------------------------------------------
+// Inquiry endpoint: POST /api/inquiry
+// Previously the contact form generated a reference ID in the browser and
+// showed a success screen without ever sending anything, so real visitor
+// inquiries were silently lost. This endpoint is the fix: it validates the
+// submission, generates the reference server-side, emails it to the business
+// inbox via Resend, and only then lets the form show success. If email
+// delivery is not configured or fails, the form shows an error instead of
+// a fake success screen.
+// Env: RESEND_API_KEY (required for delivery), INQUIRY_TO (default
+// sinclairgonsalves9@gmail.com), INQUIRY_FROM (default Resend test sender),
+// RESEND_API_BASE (override for tests only).
+// ---------------------------------------------------------------------------
+
+const INQUIRY_TO = process.env.INQUIRY_TO || 'sinclairgonsalves9@gmail.com';
+const INQUIRY_FROM = process.env.INQUIRY_FROM || 'Cohesion Consulting <onboarding@resend.dev>';
+const RESEND_API_BASE = (process.env.RESEND_API_BASE || 'https://api.resend.com').replace(/\/$/, '');
+
+function inquiryReferenceId() {
+  return `CC-${crypto.randomBytes(4).toString('hex').toUpperCase().slice(0, 6)}`;
+}
+
+function cleanField(value: unknown, max: number) {
+  return typeof value === 'string' ? value.trim().slice(0, max) : '';
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// Minimal abuse guard: 5 submissions per IP per 10 minutes.
+const inquiryAttempts = new Map<string, number[]>();
+function inquiryRateLimited(ip: string) {
+  const now = Date.now();
+  const recent = (inquiryAttempts.get(ip) || []).filter((t) => now - t < 10 * 60 * 1000);
+  if (recent.length >= 5) return true;
+  recent.push(now);
+  inquiryAttempts.set(ip, recent);
+  return false;
+}
+
+app.get('/api/inquiry/health', (_req, res) => {
+  // Deliberately reveals only whether delivery is configured, never the key.
+  res.json({ configured: Boolean(process.env.RESEND_API_KEY), toConfigured: Boolean(process.env.INQUIRY_TO) });
+});
+
+app.post('/api/inquiry', async (req, res) => {
+  if (inquiryRateLimited(req.ip || 'unknown')) {
+    return res.status(429).json({ success: false, error: 'Too many inquiries. Please try again in a few minutes.' });
+  }
+
+  const fullName = cleanField(req.body?.fullName, 120);
+  const workEmail = cleanField(req.body?.workEmail, 200);
+  const companyName = cleanField(req.body?.companyName, 200);
+  const phoneNumber = cleanField(req.body?.phoneNumber, 60);
+  const service = cleanField(req.body?.service, 120);
+  const teamSize = cleanField(req.body?.teamSize, 120);
+  const message = cleanField(req.body?.message, 4000);
+  const source = cleanField(req.body?.source, 60) || 'website-contact-form';
+
+  if (!fullName || !companyName || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(workEmail)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Please provide your full name, company, and a valid work email.',
+    });
+  }
+
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.error('Inquiry received but RESEND_API_KEY is not configured; not claiming success.');
+    return res.status(503).json({
+      success: false,
+      error: 'Inquiry delivery is not configured yet. Please email us directly and quote the form details.',
+    });
+  }
+
+  const referenceId = inquiryReferenceId();
+  const submittedAt = new Date().toISOString();
+  const rows: Array<[string, string]> = [
+    ['Reference', referenceId],
+    ['Name', fullName],
+    ['Work email', workEmail],
+    ['Company', companyName],
+    ['Phone', phoneNumber || '—'],
+    ['Service', service || '—'],
+    ['Team size / scope', teamSize || '—'],
+    ['Source', source],
+    ['Submitted', submittedAt],
+  ];
+  const textBody = [...rows, ['', ''], ['Message', message || '—']]
+    .map(([k, v]) => (k ? `${k}: ${v}` : ''))
+    .join('\n');
+  const htmlBody = `<h2>New Cohesion Consulting inquiry — ${escapeHtml(referenceId)}</h2>` +
+    rows.map(([k, v]) => `<p><strong>${escapeHtml(k)}:</strong> ${escapeHtml(v)}</p>`).join('') +
+    `<p><strong>Message:</strong><br>${escapeHtml(message || '—').replace(/\n/g, '<br>')}</p>`;
+
+  try {
+    const response = await fetch(`${RESEND_API_BASE}/emails`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: INQUIRY_FROM,
+        to: [INQUIRY_TO],
+        reply_to: workEmail,
+        subject: `[Cohesion Inquiry ${referenceId}] ${companyName} - ${fullName}`,
+        text: textBody,
+        html: htmlBody,
+      }),
+    });
+    if (!response.ok) {
+      const detail = await response.text().catch(() => '');
+      console.error('Resend inquiry delivery failed:', response.status, detail.slice(0, 500));
+      return res.status(502).json({
+        success: false,
+        error: 'Your inquiry could not be sent just now. Please try again in a few minutes.',
+      });
+    }
+  } catch (error) {
+    console.error('Resend inquiry delivery error:', error);
+    return res.status(502).json({
+      success: false,
+      error: 'Your inquiry could not be sent just now. Please try again in a few minutes.',
+    });
+  }
+
+  // Second record, best-effort: server log + local JSONL (never blocks success).
+  console.log(`Inquiry delivered: ${referenceId} from ${companyName} (${workEmail}) via ${source}`);
+  try {
+    await fs.mkdir(path.join(__dirname, 'data'), { recursive: true });
+    await fs.appendFile(
+      path.join(__dirname, 'data', 'inquiries.jsonl'),
+      JSON.stringify({ referenceId, submittedAt, fullName, workEmail, companyName, phoneNumber, service, teamSize, message, source }) + '\n',
+    );
+  } catch (error) {
+    console.warn('Could not append inquiry to local log:', error);
+  }
+
+  return res.json({ success: true, referenceId });
+});
 
 // API endpoint: Generate Real-Time Daily Activity & SLA Report
 app.post('/api/ai/daily-report', async (req, res) => {
