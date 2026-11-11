@@ -1,11 +1,18 @@
 import React from 'react';
 import { Mail, ArrowUpRight } from 'lucide-react';
+import type { SitePage } from './Navigation.tsx';
 
 interface FooterProps {
   onOpenContact: () => void;
+  page: SitePage;
+  onNavigate: (page: SitePage) => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onOpenContact }) => {
+export const Footer: React.FC<FooterProps> = ({ onOpenContact, page, onNavigate }) => {
+  const go = (e: React.MouseEvent, next: SitePage) => {
+    e.preventDefault();
+    onNavigate(next);
+  };
   return (
     <footer className="bg-[#070709] border-t border-white/10 text-xs text-zinc-400 font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -31,21 +38,53 @@ export const Footer: React.FC<FooterProps> = ({ onOpenContact }) => {
               Navigation
             </span>
             <ul className="space-y-2 text-zinc-400">
-              <li>
-                <a href="#services" className="hover:text-white transition-colors">
-                  Services Offered
-                </a>
-              </li>
-              <li>
-                <a href="#usps" className="hover:text-white transition-colors">
-                  Core USPs
-                </a>
-              </li>
-              <li>
-                <a href="#deliverables" className="hover:text-white transition-colors">
-                  Contractual Deliverables
-                </a>
-              </li>
+              {page === 'advertising' ? (
+                <>
+                  <li>
+                    <a href="#ad-services" className="hover:text-white transition-colors">
+                      Advertising Services
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#testimonials" className="hover:text-white transition-colors">
+                      Testimonials
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#faq" className="hover:text-white transition-colors">
+                      FAQ
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/" onClick={(e) => go(e, 'consulting')} className="hover:text-white transition-colors">
+                      Consulting
+                    </a>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li>
+                    <a href="#services" className="hover:text-white transition-colors">
+                      Services Offered
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#usps" className="hover:text-white transition-colors">
+                      Core USPs
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#deliverables" className="hover:text-white transition-colors">
+                      Contractual Deliverables
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/advertising" onClick={(e) => go(e, 'advertising')} className="hover:text-white transition-colors">
+                      Advertising
+                    </a>
+                  </li>
+                </>
+              )}
               <li>
                 <a href="#contact" className="hover:text-white transition-colors">
                   Contact Us

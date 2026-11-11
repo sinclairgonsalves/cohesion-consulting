@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, Mail } from 'lucide-react';
 
+export type SitePage = 'consulting' | 'advertising';
+
 interface NavigationProps {
   onOpenContact: () => void;
+  page: SitePage;
+  onNavigate: (page: SitePage) => void;
 }
 
-export const Navigation: React.FC<NavigationProps> = ({ onOpenContact }) => {
+export const Navigation: React.FC<NavigationProps> = ({ onOpenContact, page, onNavigate }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -16,6 +20,92 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenContact }) => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const go = (e: React.MouseEvent, next: SitePage) => {
+    e.preventDefault();
+    setMobileMenuOpen(false);
+    onNavigate(next);
+  };
+
+  // Anchor links belong to the page they describe; the cross-page links
+  // switch pages instead.
+  const desktopLinks =
+    page === 'advertising' ? (
+      <>
+        <a href="#ad-services" className="hover:text-white transition-colors">
+          Ad Services
+        </a>
+        <a href="#testimonials" className="hover:text-white transition-colors">
+          Testimonials
+        </a>
+        <a href="#faq" className="hover:text-white transition-colors">
+          FAQ
+        </a>
+        <a href="/" onClick={(e) => go(e, 'consulting')} className="hover:text-white transition-colors">
+          Consulting
+        </a>
+        <a href="#contact" className="hover:text-white transition-colors">
+          Contact Us
+        </a>
+      </>
+    ) : (
+      <>
+        <a href="#services" className="hover:text-white transition-colors">
+          Services Offered
+        </a>
+        <a href="#usps" className="hover:text-white transition-colors">
+          Core USPs
+        </a>
+        <a href="#deliverables" className="hover:text-white transition-colors">
+          Deliverables
+        </a>
+        <a href="/advertising" onClick={(e) => go(e, 'advertising')} className="hover:text-white transition-colors">
+          Advertising
+        </a>
+        <a href="#contact" className="hover:text-white transition-colors">
+          Contact Us
+        </a>
+      </>
+    );
+
+  const mobileLinks =
+    page === 'advertising' ? (
+      <>
+        <a href="#ad-services" onClick={() => setMobileMenuOpen(false)} className="block text-zinc-300 hover:text-white py-1 font-medium">
+          Ad Services
+        </a>
+        <a href="#testimonials" onClick={() => setMobileMenuOpen(false)} className="block text-zinc-300 hover:text-white py-1 font-medium">
+          Testimonials
+        </a>
+        <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="block text-zinc-300 hover:text-white py-1 font-medium">
+          FAQ
+        </a>
+        <a href="/" onClick={(e) => go(e, 'consulting')} className="block text-zinc-300 hover:text-white py-1 font-medium">
+          Consulting
+        </a>
+        <a href="#contact" onClick={() => setMobileMenuOpen(false)} className="block text-zinc-300 hover:text-white py-1 font-medium">
+          Contact Us
+        </a>
+      </>
+    ) : (
+      <>
+        <a href="#services" onClick={() => setMobileMenuOpen(false)} className="block text-zinc-300 hover:text-white py-1 font-medium">
+          Services Offered
+        </a>
+        <a href="#usps" onClick={() => setMobileMenuOpen(false)} className="block text-zinc-300 hover:text-white py-1 font-medium">
+          Core USPs
+        </a>
+        <a href="#deliverables" onClick={() => setMobileMenuOpen(false)} className="block text-zinc-300 hover:text-white py-1 font-medium">
+          Contractual Deliverables
+        </a>
+        <a href="/advertising" onClick={(e) => go(e, 'advertising')} className="block text-zinc-300 hover:text-white py-1 font-medium">
+          Advertising
+        </a>
+        <a href="#contact" onClick={() => setMobileMenuOpen(false)} className="block text-zinc-300 hover:text-white py-1 font-medium">
+          Contact Us
+        </a>
+      </>
+    );
 
   return (
     <header
@@ -28,7 +118,8 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenContact }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand Wordmark */}
         <a
-          href="#"
+          href="/"
+          onClick={(e) => go(e, 'consulting')}
           className="text-base sm:text-lg font-bold tracking-tight text-white font-display hover:text-zinc-300 transition-colors shrink-0"
         >
           Cohesion Consulting
@@ -36,18 +127,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenContact }) => {
 
         {/* Minimalist Navigation Links */}
         <nav className="hidden md:flex items-center gap-8 text-xs sm:text-sm font-medium text-zinc-400 font-sans">
-          <a href="#services" className="hover:text-white transition-colors">
-            Services Offered
-          </a>
-          <a href="#usps" className="hover:text-white transition-colors">
-            Core USPs
-          </a>
-          <a href="#deliverables" className="hover:text-white transition-colors">
-            Deliverables
-          </a>
-          <a href="#contact" className="hover:text-white transition-colors">
-            Contact Us
-          </a>
+          {desktopLinks}
         </nav>
 
         {/* Primary Action Button (High-Contrast Monochrome) */}
@@ -82,34 +162,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenContact }) => {
       {/* Mobile drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-[#09090b] border-b border-white/10 px-4 py-4 space-y-3 text-sm">
-          <a
-            href="#services"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block text-zinc-300 hover:text-white py-1 font-medium"
-          >
-            Services Offered
-          </a>
-          <a
-            href="#usps"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block text-zinc-300 hover:text-white py-1 font-medium"
-          >
-            Core USPs
-          </a>
-          <a
-            href="#deliverables"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block text-zinc-300 hover:text-white py-1 font-medium"
-          >
-            Contractual Deliverables
-          </a>
-          <a
-            href="#contact"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block text-zinc-300 hover:text-white py-1 font-medium"
-          >
-            Contact Us
-          </a>
+          {mobileLinks}
         </div>
       )}
     </header>
