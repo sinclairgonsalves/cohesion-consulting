@@ -1,5 +1,5 @@
 import React from 'react';
-import { BadgeCheck, Search, TrendingUp, Star, PhoneCall, ArrowUpRight } from 'lucide-react';
+import { BadgeCheck, Search, TrendingUp, Star, PhoneCall, MapPin, Globe, ArrowUpRight } from 'lucide-react';
 
 interface AdvertisingServicesSectionProps {
   onOpenContact: (serviceName?: string) => void;
@@ -40,6 +40,20 @@ const SERVICES = [
     service: 'Google Ads + LSA (Combined)',
     description:
       'Every call and lead tracked back to the ad that produced it. A simple weekly report: what you spent, what rang, and what booked. No black box.',
+  },
+  {
+    icon: MapPin,
+    title: 'Google Business Profile Support',
+    service: 'Google Business Profile Support',
+    description:
+      'Your Business Profile is the front door of your company on Google. We handle setup, categories, services, photos, posts, Q&A, and review replies — kept current so you show up and get chosen.',
+  },
+  {
+    icon: Globe,
+    title: 'Organic Ranking / Local SEO',
+    service: 'Local SEO / Organic Ranking',
+    description:
+      'Strategies to rank higher organically: local keywords, on-page fixes, citations, and content that earns you the map pack and page one — leads that keep coming even when the ad budget pauses.',
   },
 ];
 

@@ -21,8 +21,8 @@ export const AdvertisingHeroSection: React.FC<AdvertisingHeroSectionProps> = ({ 
 
           <p className="text-base sm:text-lg text-zinc-300 leading-relaxed font-sans max-w-2xl">
             Cohesion Consulting runs Google Ads and Local Services Ads for HVAC, plumbing,
-            electrical, and other home-service companies across Toronto and the GTA — so the
-            phone rings with real homeowners in your service area, not tyre-kickers.
+            electrical, and other home-service companies across Canada and the United States —
+            so the phone rings with real customers in your service area, not tyre-kickers.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
@@ -48,7 +48,7 @@ export const AdvertisingHeroSection: React.FC<AdvertisingHeroSectionProps> = ({ 
               Google Guaranteed / LSA
             </span>
             <span className="px-3 py-1.5 rounded-full bg-black/60 border border-white/10">Pay per lead on LSA</span>
-            <span className="px-3 py-1.5 rounded-full bg-black/60 border border-white/10">Toronto &amp; GTA</span>
+            <span className="px-3 py-1.5 rounded-full bg-black/60 border border-white/10">Canada &amp; United States</span>
             <span className="px-3 py-1.5 rounded-full bg-black/60 border border-white/10">Weekly reporting</span>
           </div>
         </div>
