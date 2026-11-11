@@ -18,8 +18,12 @@ const FAQS = [
     a: 'No. Engagements are month-to-month after the initial setup. If the leads stop being worth it, you can walk away — we would rather earn the renewal than lock you in.',
   },
   {
+    q: 'Do you handle Google Business Profile and organic ranking too?',
+    a: 'Yes. Beyond paid ads, we manage your Google Business Profile — setup, categories, photos, posts, Q&A, and review replies — and run local SEO strategies to rank you higher organically: local keywords, on-page fixes, citations, and content. Organic leads keep coming even when the ad budget pauses.',
+  },
+  {
     q: 'Which businesses is this for?',
-    a: 'Home-service companies that win work by phone: HVAC, plumbing, electrical, appliance repair, and similar trades across Toronto and the GTA. If your customers search Google when something breaks, this is built for you.',
+    a: 'Home-service companies that win work by phone: HVAC, plumbing, electrical, appliance repair, and similar trades across Canada and the United States. If your customers search Google when something breaks, this is built for you.',
   },
 ];
 

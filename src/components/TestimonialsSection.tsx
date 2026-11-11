@@ -32,7 +32,7 @@ const TESTIMONIALS = [
   {
     quote:
       "They treat our ad budget like it's their own money. Straight answers, fast changes, and the phone keeps ringing.",
-    attribution: 'Owner — Furnace & AC Company, Vaughan, ON',
+    attribution: 'Owner — Furnace & AC Company, Dallas, TX',
   },
 ];
 
