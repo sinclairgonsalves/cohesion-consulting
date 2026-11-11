@@ -2,39 +2,45 @@ import React, { useState } from 'react';
 import { Send, CheckCircle2, ShieldCheck, Clock, Calendar, Mail, Building, User, Phone, MessageSquare } from 'lucide-react';
 import { SuccessCheckmark } from './SuccessCheckmark.tsx';
 import { submitInquiry } from '../lib/inquiry.ts';
+import { SERVICE_OPTIONS, scopeOptionsFor, scopeLabelFor, defaultScopeFor } from '../lib/services.ts';
 
 interface ContactSectionProps {
   initialService?: string;
+  /** Where the inquiry came from, recorded in the delivered email. */
+  source?: string;
+  /** Left-column heading; defaults to the consulting copy. */
+  heading?: string;
+  /** Left-column intro paragraph; defaults to the consulting copy. */
+  intro?: string;
+  /** Short line under "Contact Us Form"; defaults to the consulting copy. */
+  formSubtitle?: string;
 }
 
-export const ContactSection: React.FC<ContactSectionProps> = ({ initialService }) => {
+export const ContactSection: React.FC<ContactSectionProps> = ({
+  initialService,
+  source,
+  heading,
+  intro,
+  formSubtitle,
+}) => {
   const [fullName, setFullName] = useState('');
   const [workEmail, setWorkEmail] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [selectedService, setSelectedService] = useState(initialService || 'Customer Support Representative (CSR)');
-  const [teamSize, setTeamSize] = useState('1 dedicated specialist');
+  const [teamSize, setTeamSize] = useState(defaultScopeFor(initialService || 'Customer Support Representative (CSR)'));
   const [message, setMessage] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [referenceId, setReferenceId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
 
-  const SERVICE_OPTIONS = [
-    'Customer Support Representative (CSR)',
-    'Business Development Representative (BDR)',
-    'Strategic Account Manager (AM)',
-    'Enterprise Account Executive (AE)',
-    'Dedicated Cross-Functional Pod',
-    'Custom Advisory / Other',
-  ];
-
-  const TEAM_SIZE_OPTIONS = [
-    '1 dedicated specialist',
-    '2–3 specialists (Pod)',
-    '4–8 specialists (Department scaling)',
-    'Enterprise Custom Team (10+)',
-  ];
+  const handleServiceChange = (next: string) => {
+    setSelectedService(next);
+    // Scope means team size for consulting and ad budget for advertising;
+    // reset it so a stale value from the other side is never submitted.
+    setTeamSize(defaultScopeFor(next));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +57,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ initialService }
         service: selectedService,
         teamSize,
         message,
-        source: 'website-contact-form',
+        source: source || 'website-contact-form',
       });
       setReferenceId(ref);
       setIsSubmitted(true);
@@ -82,13 +88,14 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ initialService }
               <span>Get in Touch</span>
             </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white font-display tracking-tight leading-tight">
-              Let's Discuss Embedding Cohesion Consulting Into Your Team
+              {heading || "Let's Discuss Embedding Cohesion Consulting Into Your Team"}
             </h2>
             <p className="text-base text-zinc-300 leading-relaxed font-sans">
               <span className="text-white font-medium italic">"Giving a team member feeling working towards your goal."</span>
             </p>
             <p className="text-sm text-zinc-400 leading-relaxed font-sans">
-              Fill out this brief inquiry form to connect with our Engagement Directors. We review your workflow and team requirements, and provide a tailored scope within our guaranteed response window.
+              {intro ||
+                'Fill out this brief inquiry form to connect with our Engagement Directors. We review your workflow and team requirements, and provide a tailored scope within our guaranteed response window.'}
             </p>
 
             {/* Direct Commitments (Monochrome Cards) */}
@@ -129,7 +136,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ initialService }
                       Contact Us Form
                     </h3>
                     <p className="text-xs text-zinc-400">
-                      Tell us what roles you need and our team will get back to you immediately.
+                      {formSubtitle || 'Tell us what roles you need and our team will get back to you immediately.'}
                     </p>
                   </div>
 
@@ -205,7 +212,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ initialService }
                     </label>
                     <select
                       value={selectedService}
-                      onChange={(e) => setSelectedService(e.target.value)}
+                      onChange={(e) => handleServiceChange(e.target.value)}
                       className="w-full px-3.5 py-2.5 text-xs bg-black/50 border border-white/10 rounded-xl text-white focus:outline-none focus:border-white focus:ring-1 focus:ring-white/20 cursor-pointer"
                     >
                       {SERVICE_OPTIONS.map((opt) => (
@@ -216,17 +223,17 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ initialService }
                     </select>
                   </div>
 
-                  {/* Estimated Team Size */}
+                  {/* Estimated Team Size / Ad Budget (depends on the service picked) */}
                   <div>
                     <label className="block text-zinc-300 font-medium mb-1.5">
-                      Target Capacity / Scope
+                      {scopeLabelFor(selectedService)}
                     </label>
                     <select
                       value={teamSize}
                       onChange={(e) => setTeamSize(e.target.value)}
                       className="w-full px-3.5 py-2.5 text-xs bg-black/50 border border-white/10 rounded-xl text-white focus:outline-none focus:border-white focus:ring-1 focus:ring-white/20 cursor-pointer"
                     >
-                      {TEAM_SIZE_OPTIONS.map((opt) => (
+                      {scopeOptionsFor(selectedService).map((opt) => (
                         <option key={opt} value={opt} className="bg-[#18181b] text-white">
                           {opt}
                         </option>

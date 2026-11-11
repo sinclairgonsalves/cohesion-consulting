@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, CheckCircle2, Send, User, Mail, Building, Phone, MessageSquare } from 'lucide-react';
 import { SuccessCheckmark } from './SuccessCheckmark.tsx';
 import { submitInquiry } from '../lib/inquiry.ts';
+import { SERVICE_OPTIONS, scopeOptionsFor, scopeLabelFor, defaultScopeFor } from '../lib/services.ts';
 
 interface ContactUsModalProps {
   isOpen: boolean;
@@ -22,26 +23,20 @@ export const ContactUsModal: React.FC<ContactUsModalProps> = ({ isOpen, onClose,
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
 
-  const SERVICE_OPTIONS = [
-    'Customer Support Representative (CSR)',
-    'Business Development Representative (BDR)',
-    'Strategic Account Manager (AM)',
-    'Enterprise Account Executive (AE)',
-    'Dedicated Cross-Functional Pod',
-    'Custom Advisory / Other',
-  ];
-
-  const TEAM_SIZE_OPTIONS = [
-    '1 dedicated specialist',
-    '2–3 specialists (Pod)',
-    '4–8 specialists (Department scaling)',
-    'Enterprise Custom Team (10+)',
-  ];
+  const handleServiceChange = (next: string) => {
+    setSelectedService(next);
+    // Scope means team size for consulting and ad budget for advertising;
+    // reset it so a stale value from the other side is never submitted.
+    setTeamSize(defaultScopeFor(next));
+  };
 
   useEffect(() => {
     if (defaultService) {
       const match = SERVICE_OPTIONS.find((s) => s.toLowerCase().includes(defaultService.toLowerCase()));
-      if (match) setSelectedService(match);
+      if (match) {
+        setSelectedService(match);
+        setTeamSize(defaultScopeFor(match));
+      }
     }
   }, [defaultService, isOpen]);
 
@@ -181,7 +176,7 @@ export const ContactUsModal: React.FC<ContactUsModalProps> = ({ isOpen, onClose,
                 </label>
                 <select
                   value={selectedService}
-                  onChange={(e) => setSelectedService(e.target.value)}
+                  onChange={(e) => handleServiceChange(e.target.value)}
                   className="w-full px-3 py-2 text-xs bg-black/50 border border-white/10 rounded-xl text-white focus:outline-none focus:border-white focus:ring-1 focus:ring-white/20 cursor-pointer"
                 >
                   {SERVICE_OPTIONS.map((opt) => (
@@ -192,17 +187,17 @@ export const ContactUsModal: React.FC<ContactUsModalProps> = ({ isOpen, onClose,
                 </select>
               </div>
 
-              {/* Capacity */}
+              {/* Capacity / Ad Budget (depends on the service picked) */}
               <div>
                 <label className="block text-zinc-300 font-medium mb-1">
-                  Team Size / Scope
+                  {scopeLabelFor(selectedService)}
                 </label>
                 <select
                   value={teamSize}
                   onChange={(e) => setTeamSize(e.target.value)}
                   className="w-full px-3 py-2 text-xs bg-black/50 border border-white/10 rounded-xl text-white focus:outline-none focus:border-white focus:ring-1 focus:ring-white/20 cursor-pointer"
                 >
-                  {TEAM_SIZE_OPTIONS.map((opt) => (
+                  {scopeOptionsFor(selectedService).map((opt) => (
                     <option key={opt} value={opt} className="bg-[#18181b] text-white">
                       {opt}
                     </option>
