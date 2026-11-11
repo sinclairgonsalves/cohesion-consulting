@@ -14,6 +14,8 @@ export const ADVERTISING_SERVICES = [
   'Google Local Services Ads (LSA)',
   'Google Ads Management',
   'Google Ads + LSA (Combined)',
+  'Google Business Profile Support',
+  'Local SEO / Organic Ranking',
   'Advertising Audit / Other',
 ];
 
