@@ -109,7 +109,13 @@ export const Footer: React.FC<FooterProps> = ({ onOpenContact, page, onNavigate 
                   <ArrowUpRight className="w-3.5 h-3.5 text-zinc-400" />
                 </button>
               </li>
-              <li className="text-[11px] text-zinc-500 font-mono">
+                      <li>
+          <a href="mailto:support@cohesionsales.com" className="text-zinc-300 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer">
+            <Mail className="w-3.5 h-3.5 text-zinc-400" />
+            <span>support@cohesionsales.com</span>
+          </a>
+        </li>
+        <li className="text-[11px] text-zinc-500 font-mono">
                 Contractual SLA: Under 15-Minute Response Window
               </li>
             </ul>
