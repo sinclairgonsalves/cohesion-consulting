@@ -107,7 +107,14 @@ export const ContactUsModal: React.FC<ContactUsModalProps> = ({ isOpen, onClose,
                 "Our agents embedded into your teams and workflow giving a team member feeling working towards your goal." Tell us what you need—we respond within our <strong>&lt; 15 min response window</strong>.
               </p>
 
-              {/* Contact Information */}
+                      <p className="text-zinc-400 leading-relaxed">
+          Prefer email? Write to{' '}
+          <a href="mailto:support@cohesionsales.com" className="text-white hover:text-zinc-200 underline underline-offset-2">
+            support@cohesionsales.com
+          </a>
+          .
+        </p>
+        {/* Contact Information */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
                   <label className="block text-zinc-300 font-medium mb-1 flex items-center gap-1">
