@@ -98,7 +98,14 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                 'Fill out this brief inquiry form to connect with our Engagement Directors. We review your workflow and team requirements, and provide a tailored scope within our guaranteed response window.'}
             </p>
 
-            {/* Direct Commitments (Monochrome Cards) */}
+                    <p className="text-sm text-zinc-400 leading-relaxed font-sans">
+          Prefer email? Write to us at{' '}
+          <a href="mailto:support@cohesionsales.com" className="text-white hover:text-zinc-200 underline underline-offset-2">
+            support@cohesionsales.com
+          </a>
+          .
+        </p>
+        {/* Direct Commitments (Monochrome Cards) */}
             <div className="space-y-3 pt-2 text-xs text-zinc-300 font-sans">
               <div className="p-3.5 rounded-xl bg-black/60 border border-white/10 flex items-start gap-3">
                 <Clock className="w-4 h-4 text-white shrink-0 mt-0.5" />
